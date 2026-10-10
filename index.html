@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="問題と答えを登録し、ランダム出題や苦手カードの復習ができる暗記カード" />
+  <title>暗記カード</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="page-header">
+      <div>
+        <p class="badge">FLASH CARDS</p>
+        <h1>暗記カード</h1>
+        <p class="description">問題と答えを登録し、ランダム出題や苦手カードの復習ができます。</p>
+      </div>
+      <a class="home-link" href="https://kentaro0810.github.io/">リンク集へ戻る</a>
+    </header>
+
+    <section class="summary-grid" aria-label="暗記カードのまとめ">
+      <article class="summary-card main-summary"><p>登録カード</p><strong id="totalCount">0枚</strong><span>すべてのカード</span></article>
+      <article class="summary-card"><p>覚えた</p><strong id="masteredCount">0枚</strong><span>正解にしたカード</span></article>
+      <article class="summary-card"><p>苦手</p><strong id="weakCount">0枚</strong><span>不正解にしたカード</span></article>
+    </section>
+
+    <section class="study-card">
+      <div class="section-heading">
+        <div><p class="section-kicker">STUDY</p><h2>学習モード</h2></div>
+        <div class="study-controls">
+          <select id="studyCategory" aria-label="学習するカテゴリー"><option value="all">すべてのカテゴリー</option></select>
+          <select id="studyMode" aria-label="出題モード">
+            <option value="all">すべて出題</option>
+            <option value="weak">苦手だけ出題</option>
+            <option value="unseen">未回答だけ出題</option>
+          </select>
+          <button id="startStudyButton" class="primary-button" type="button">学習を開始</button>
+        </div>
+      </div>
+
+      <div id="studyEmpty" class="study-empty">
+        <span aria-hidden="true">🧠</span><h3>カードを登録して学習を始めましょう</h3><p>下の「カードを追加」から問題と答えを登録できます。</p>
+      </div>
+
+      <div id="studySession" class="study-session hidden">
+        <div class="session-info"><span id="sessionProgress">1 / 1</span><span id="sessionCategory">カテゴリー</span></div>
+        <button id="flashcard" class="flashcard" type="button" aria-label="カードをめくる">
+          <span id="cardSideLabel" class="card-side-label">問題</span>
+          <strong id="cardContent">問題文</strong>
+          <small>タップして答えを見る</small>
+        </button>
+        <div id="answerActions" class="answer-actions hidden">
+          <button id="incorrectButton" class="incorrect-button" type="button">まだ覚えていない</button>
+          <button id="correctButton" class="correct-button" type="button">覚えた</button>
+        </div>
+        <div id="sessionComplete" class="session-complete hidden">
+          <span aria-hidden="true">🎉</span><h3>学習完了</h3><p id="sessionResult">正解 0 / 0</p>
+          <button id="restartButton" class="primary-button" type="button">もう一度学習する</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="library-card">
+      <div class="section-heading">
+        <div><p class="section-kicker">CARD LIBRARY</p><h2>カード一覧</h2></div>
+        <button id="openAddButton" class="primary-button" type="button">＋ カードを追加</button>
+      </div>
+      <div class="library-tools">
+        <input id="searchInput" type="search" placeholder="問題・答えを検索" />
+        <select id="libraryCategory" aria-label="一覧のカテゴリー"><option value="all">すべてのカテゴリー</option></select>
+      </div>
+      <div id="cardList" class="card-list"></div>
+      <div id="libraryEmpty" class="empty-state"><span aria-hidden="true">📚</span><h3>カードがありません</h3><p>最初の暗記カードを追加してください。</p></div>
+    </section>
+
+    <section class="data-card">
+      <h2>データ管理</h2>
+      <p>カードと学習結果はこの端末に保存されます。JSON形式でバックアップできます。</p>
+      <div class="data-actions">
+        <button id="exportButton" class="secondary-button" type="button">バックアップを書き出す</button>
+        <label class="secondary-button file-label" for="importInput">バックアップを読み込む</label>
+        <input id="importInput" type="file" accept="application/json,.json" hidden />
+        <button id="resetResultsButton" class="secondary-button" type="button">学習結果をリセット</button>
+        <button id="resetAllButton" class="danger-button" type="button">全データを削除</button>
+      </div>
+      <p id="statusMessage" class="status-message" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <dialog id="cardDialog" class="card-dialog">
+    <form id="cardForm" method="dialog">
+      <div class="dialog-heading">
+        <div><p class="section-kicker">CARD SETTINGS</p><h2 id="dialogTitle">カードを追加</h2></div>
+        <button id="closeDialogButton" class="icon-button" type="button" aria-label="閉じる">×</button>
+      </div>
+      <input id="cardId" type="hidden" />
+      <label for="questionInput">問題</label>
+      <textarea id="questionInput" maxlength="200" placeholder="例：日本の首都は？" required></textarea>
+      <label for="answerInput">答え</label>
+      <textarea id="answerInput" maxlength="300" placeholder="例：東京" required></textarea>
+      <label for="categoryInput">カテゴリー</label>
+      <input id="categoryInput" type="text" maxlength="30" list="categorySuggestions" placeholder="例：社会" required />
+      <datalist id="categorySuggestions"></datalist>
+      <div class="dialog-actions">
+        <button id="cancelButton" class="secondary-button" type="button">キャンセル</button>
+        <button class="primary-button" type="submit">保存する</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
